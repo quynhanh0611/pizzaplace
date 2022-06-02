@@ -1,0 +1,124 @@
+﻿@page "/"
+@using PizzaPlace_2022.Shared
+@inject IMenuService MenuService
+
+<PageTitle>Index</PageTitle>
+<h1>Our selection of pizzas</h1>
+
+
+@code {
+    private State State { get; } = new State();
+    protected override async Task OnInitializedAsync()
+    {
+        Menu menu = await MenuService.GetMenu();
+        foreach (Pizza pizza in menu.Pizzas){
+            State.Menu.Add(pizza);
+        }
+    }
+
+    //protected override void OnInitialized()
+    //{
+    //    State.Menu.Add(
+    //        new Pizza(1, "Pepperoni", 8.99M, Spiciness.Spicy));
+    //    State.Menu.Add(
+    //        new Pizza(2, "Margarita", 7.99M, Spiciness.None));
+    //    State.Menu.Add(
+    //        new Pizza(3, "Diabolo", 9.99M, Spiciness.Hot));
+
+    //}
+    private string SpicinessImage(Spiciness spiciness)
+    => $"images/{spiciness.ToString().ToLower()}.png";
+
+    private void AddToBasket(Pizza pizza)
+    => State.Basket.Add(pizza.Id);
+
+    private void RemoveFromBasket(int pos)
+    => State.Basket.RemoveAt(pos);
+
+    private void PlaceOrder()
+    {
+        Console.WriteLine("Placing order");
+    }
+    
+}
+<!--Shopping Basket-->
+<ShoppingBasket Orders="@State.Basket.Orders"
+    GetPizzaFromId="@State.Menu.GetPizza"
+    Selected="@RemoveFromBasket"/>
+<!-- End shopping basket -->
+
+<!-- Customer entry -->
+<CustomerEntry Title="Please enter your details below"
+    @bind-Customer="@State.Basket.Customer"
+    ButtonTitle="Checkout"
+    ButtonClass="mx-auto w-25 btn btn-success"
+    ValidSubmit="PlaceOrder"/>>
+<!-- End customer entry -->
+
+@State.ToJson()
+@code{
+
+}
+
+<!-- NEW Customer entry -->
+<h1 class"mt-2 mb-2" >Please enter your details below</h1>
+
+<EditForm Model="@State.Basket.Customer"
+      OnInvalidSubmit="PlaceOrder">
+      <DataAnnotationsValidator/>
+      <fieldset>
+          <div class="row mb-2">
+              <label class="col-2" for="name">Name:</label>
+              <InputText class="form-control col-6"
+                  @bind-Value="@State.Basket.Customer.Name" />
+          </div>
+          <div class="row mb-2">
+              <div class="col-6 offset-2">
+                 <ValidationMessage
+                 For="@(() =>State.Basket.Customer.Name)"/>
+          </div>
+          </div>
+          <div class="row mb-2">
+              <label class="col-2" for="street">Street:</label>
+              <InputText class="form-control col-6"
+                  @bind-Value="@State.Basket.Customer.Street" />
+          </div>
+           <div class="row mb-2">
+              <div class="col-6 offset-2">
+                 <ValidationMessage
+                 For="@(() =>State.Basket.Customer.Street)"/>
+                 </div>
+          </div>
+          <div class="row mb-2">
+              <label class="col-2" for="city">City:</label>
+              <InputText class="form-control col-6"
+                  @bind-Value="@State.Basket.Customer.City" />
+          </div>
+           <div class="row mb-2">
+              <div class="col-6 offset-2">
+                 <ValidationMessage
+                 For="@(() =>State.Basket.Customer.City)"/>
+          </div>
+          </div>
+          <div class="row mb-2">
+              <button class="mx-auto w-25 btn-success"
+                   @onclick="PlaceOrder">Checkout</button>
+          </div>
+      </fieldset>
+  </EditForm>
+  <!-- End NEW customer entry -->
+
+  <h1 class ="mt-2 mb-2">Please enter your details below</h1>
+
+  @*<EditForm Model="@State.Basket.Customer"
+  OnValidSubmit="PlaceOrder">*@
+
+<DataAnnotationsValidator/>
+
+<!--Menu-->
+<PizzaList Title="Our Selection of Pizzas"
+Items="@State.Menu.Pizzas"
+ButtonTitle="Order"
+ButtonClass="btn btn-success pl-4 pr-4"
+Selected="@AddToBasket"/>
+<!--End Menu-->
